@@ -14,43 +14,27 @@
         <script src="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
 	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
-        <script src="All_Stud_Pcity.js"></script>
+        <script src="All_Stud_PcityII.js"></script>
+	<script src="All_Stud_LcityII.js"></script>
         <script>
-            
-            
-            
-//          using the pointToLayer option to create a CircleMarker:
-            var map = L.map('map', {
+
+	    var map = L.map('map', {
 		center: [42.31, -41.077359],
 		zoom: 2,
 		dragging : true,
-	    });
-            L.tileLayer('http://{s}.tile.cloudmade.com/{key}/22677/256/{z}/{x}/{y}.png', {
+		});
+	        L.tileLayer('http://{s}.tile.cloudmade.com/{key}/22677/256/{z}/{x}/{y}.png', {
 			attribution: 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2012 CloudMade',
 			key: 'BC9A493B41014CAABB98F0471D759707'
 		}).addTo(map);
-            
-            var baseballIcon = L.icon({
-			iconUrl: 'baseball-marker.png',
-			iconSize: [32, 37],
-			iconAnchor: [16, 37],
-			popupAnchor: [0, -28]
-		});
-
-            
-	    
-
-
-function onEachFeature(feature, layer) {
-    // does this feature have a property named ProgramName?
-    if (feature.properties && feature.properties.ProgramName) {
-        layer.bindPopup(feature.properties.ProgramName);
-    }
-}
-
-var L_collor = "#ff7800"
-var P_collor = "##0008ff"
-            L.geoJson(Lcity, {
+	    function onEachFeature(feature, layer) {
+		// does this feature have a property named ProgramName?
+		 if (feature.properties && feature.properties.ProgramName) {
+			layer.bindPopup(feature.properties.CtryCitizenship);
+		 }
+	     }
+	        var students = new L.LayerGroup();	
+		var Pcity = L.geoJson(Pcity, {
 
 			style: function (feature) {
 				return feature.properties && feature.properties.style;
@@ -68,8 +52,9 @@ var P_collor = "##0008ff"
 					fillOpacity: 0.8
 				});
 			}
-		}).addTo(map);
-	    L.geoJson( Pcity, {
+		});
+		    map.addLayer(Pcity);
+	        var Lcity = L.geoJson( Lcity, {
 
 			style: function (feature) {
 				return feature.properties && feature.properties.style;
@@ -87,7 +72,13 @@ var P_collor = "##0008ff"
 					fillOpacity: 0.8
 				});
 			}
-		}).addTo(map);
-
+		});
+		
+	    var overlays = {
+		"Permanent Address": Pcity,
+		"Local Address": Lcity
+		};
+	        L.control.layers(overlays).addTo(map);
+	    
         </script>
 
