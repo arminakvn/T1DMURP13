@@ -5,61 +5,79 @@
 	<meta charset="utf-8" />
 
 	<meta name="viewport" content="width=device-width, initial-scale=2.0">
-
-	<link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.css" />
+        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.2/leaflet.css"/>
+        <script src="http://cdn.leafletjs.com/leaflet-0.6.2/leaflet-src.js"></script>  
 	<!--[if lte IE 8]><link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.6.4/leaflet.ie.css" /><![endif]-->
+        <link rel="stylesheet" href="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/MarkerCluster.css" />
+	<link rel="stylesheet" href="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/MarkerCluster.Default.css" />
+	<!--[if lte IE 8]><link rel="stylesheet" href="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/MarkerCluster.Default.ie_.css" /><![endif]-->
+	<script src="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/leaflet.markercluster-src.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+	<script src="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/PcityF1.js"></script>
+	<script src="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/LcityF.js"></script>
 </head>
 <body>
 
-	<div id="map" style="position: absolute; width: 960px; height: 600px"></div>
-	<a href="https://github.com/arminakvn"><img style="position: relative; float: down; right: 2; border: 0; width: 149px; height: 149px;" src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png" alt="Fork me on GitHub"></a>
-
-        <script src="http://cdn.leafletjs.com/leaflet-0.4.4/leaflet.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
-	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
-	<script src="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/PcityF.js"></script>
-	<script src="http://www.northeastern.edu/dukakiscenter/wp-content/uploads/LcityF.js"></script>
+	<div id="map" style="position: absolute; width: 960px; height: 600px"></div>            
         <script>
 
 	    var map = L.map('map', {
 		center: [42.31, -0.077359],
 		zoom: 2,
+                maxZoom: 14,
 		scrollWheelZoom: false,
 		zoomAnimation: false,
 		closePopupOnClick: true,
 		dragging : true,
 		});
-	        L.tileLayer('http://{s}.tile.cloudmade.com/{key}/106695/256/{z}/{x}/{y}.png', {
+	        L.tileLayer('http://{s}.tile.cloudmade.com/{key}/106794/256/{z}/{x}/{y}.png', {
 			attribution: 'Map data &copy; 2011 OpenStreetMap contributors, Imagery &copy; 2012 CloudMade',
 			key: 'da13504e06a041dcb81804e6100c8b55'
 		}).addTo(map);
 	    function onEachFeature(feature, layer) {
 		// does this feature have a property named ProgramName?
 		 if (feature.properties && feature.properties.LocalCtry) {
-			layer.bindPopup(feature.properties.PermanentC + " " + '<b>' +feature.properties.LocalCtry + '</b><br />' + feature.properties.ProgramNam + '</b><br />' + 'Entered the program in  ' + '<b>' + feature.properties.Entered_Pr + '</b><br/>' + 'Status: ' + '<b>'+ feature.properties.Status);
+			layer.bindPopup(feature.properties.PermanentC + " " + '<b>' +feature.properties.Permanen_1 + '</b><br />' + feature.properties.ProgramNam + '</b><br />' + 'Entered the program in  ' + '<b>' + feature.properties.Entered_Pr + '</b><br/>' + 'Status: ' + '<b>'+ feature.properties.Status);
 		 }
 	     }
-	        var students = new L.LayerGroup();	
+	        var students = new L.LayerGroup();
+                var markers = L.markerClusterGroup();
 		var Pcity = L.geoJson(PcityF, {
 
 			style: function (feature) {
 				return feature.properties && feature.properties.style;
 			},
                         onEachFeature: onEachFeature,
-
-
-			pointToLayer: function (feature, latlng) {
+                        pointToLayer: function (feature, latlng) {
 				return L.circleMarker(latlng, {
-					radius: 5,
+					radius: 12,
 					fillColor: "#ff7800",
 					color: "#000",
 					weight: 1,
-					opacity: 1,
-					fillOpacity: 0.7
+					opacity: 0.1,
+					fillOpacity: 0.4
 				});
 			}
 		});
-		    map.addLayer(Pcity);
+		    markers.addLayer(Pcity)
+                    map.addLayer(markers);
+                    
+		L.DomUtil.get('populate').onclick = function () {
+			var bounds = map.getBounds(),
+			southWest = bounds.getSouthWest(),
+			northEast = bounds.getNorthEast(),
+			lngSpan = northEast.lng - southWest.lng,
+			latSpan = northEast.lat - southWest.lat;
+			var m = new L.Marker(new L.LatLng(
+					southWest.lat + latSpan * 0.5,
+					southWest.lng + lngSpan * 0.5));
+			markersList.push(m);
+			markers.addLayer(m);
+		};
+		L.DomUtil.get('remove').onclick = function () {
+			markers.removeLayer(markersList.pop());
+		};
 	        var Lcity = L.geoJson( PcityF, {
 
 			style: function (feature) {
@@ -79,7 +97,7 @@
 				});
 			}
 		});
-		var newStuds = L.geoJson( LcityF, {
+		var newStuds = L.geoJson( PcityF, {
 
 			filter: function(feature, layer) {
 				 return feature.properties.StatusNew;
@@ -98,7 +116,7 @@
 				});
 			}
 		});
-		var gradStuds = L.geoJson( LcityF, {
+		var gradStuds = L.geoJson( PcityF, {
 
 			filter: function(feature, layer) {
 				 return feature.properties.StatusGrad;
@@ -117,7 +135,7 @@
 				});
 			}
 		});
-		var contuStuds = L.geoJson( LcityF, {
+		var contuStuds = L.geoJson( PcityF, {
 
 			filter: function(feature, layer) {
 				 return feature.properties.StatusCont;
@@ -142,7 +160,8 @@
 		"Graduated Students": gradStuds,
 		"All": Lcity
 		};
-		L.control.layers(overlays).addTo(map);
+//		L.control.layers(overlays).addTo(map);
+            
         </script>
 </body>
 </html>
